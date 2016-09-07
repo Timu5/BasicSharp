@@ -99,6 +99,7 @@ namespace Basic
                 case Token.Goto: Goto(); break;
                 case Token.If: If(); break;
                 case Token.For: For(); break;
+                case Token.Next: Next(); break;
                 case Token.Let: Let(); break;
                 case Token.End: End(); break;
                 case Token.Identifer:
@@ -253,13 +254,8 @@ namespace Basic
 
         void For()
         {
-            throw new NotImplementedException();
-
             Match(Token.Identifer);
             string var = lex.Identifer;
-
-            if (loops.ContainsKey(var)) loops[var] = lineMarker;
-            else loops.Add(var, lineMarker);
 
             GetNextToken();
             Match(Token.Equal);
@@ -267,7 +263,15 @@ namespace Basic
             GetNextToken();
             Expr();
 
-            SetVar(var, stack.Pop());
+            if (loops.ContainsKey(var))
+            {
+                loops[var] = lineMarker;
+            }
+            else
+            {
+                SetVar(var, stack.Pop());
+                loops.Add(var, lineMarker);
+            }
 
             Match(Token.To);
 
@@ -275,13 +279,31 @@ namespace Basic
             Expr();
 
             Value val = stack.Pop();
+            
             if (vars[var].BinOp(val, Token.More).Real == 1)
             {
-            }
-            else
-            {
+                while (true)
+                {
+                    while (!(GetNextToken() == Token.Identifer && prevToken == Token.Next)) ;
+                    if (lex.Identifer == var)
+                    {
+                        loops.Remove(var);
+                        GetNextToken();
+                        Match(Token.NewLine);
+                        break;
+                    }
+                }
             }
 
+        }
+
+        void Next()
+        {
+            Match(Token.Identifer);
+            string var = lex.Identifer;
+            vars[var] = vars[var].BinOp(new Value(1), Token.Plus);
+            lex.GoTo(new Marker(loops[var].Pointer - 1, loops[var].Line, loops[var].Column - 1));
+            lastToken = Token.NewLine;
         }
 
         void Expr()
