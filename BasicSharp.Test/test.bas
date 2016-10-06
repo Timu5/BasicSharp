@@ -1,10 +1,3 @@
-BasicSharp
-====
-Simple BASIC interpreter written in C# for .Net platform. Syntax of basic script is modernize version of BASIC, see example below.
-
-Example
--------
-``` basic
 print "Hello World"
 
 let a = 10
@@ -24,5 +17,3 @@ print "False"
 
 mylabel:
 Print "True"
-
-```
