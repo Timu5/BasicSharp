@@ -11,6 +11,7 @@ namespace BasicSharp
         //Keywords
         Print,
         If,
+		EndIf,
         Then,
         Else,
         For,

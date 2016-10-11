@@ -57,6 +57,7 @@ namespace BasicSharp
                 {
                     case "PRINT": return Token.Print;
                     case "IF": return Token.If;
+                    case "ENDIF": return Token.EndIf;
                     case "THEN": return Token.Then;
                     case "ELSE": return Token.Else;
                     case "FOR": return Token.For;

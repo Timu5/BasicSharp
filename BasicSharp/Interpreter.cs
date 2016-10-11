@@ -13,6 +13,8 @@ namespace BasicSharp
         private Dictionary<string, Marker> labels;
         private Dictionary<string, Marker> loops;
 
+		private int ifcounter;
+
         private Stack<Value> stack;
 
         private Marker lineMarker;
@@ -26,6 +28,7 @@ namespace BasicSharp
             this.labels = new Dictionary<string, Marker>();
             this.loops = new Dictionary<string, Marker>();
             this.stack = new Stack<Value>();
+			this.ifcounter = 0;
         }
 
         public Value GetVar(string name)
@@ -97,6 +100,8 @@ namespace BasicSharp
                 case Token.Input: Input(); break;
                 case Token.Goto: Goto(); break;
                 case Token.If: If(); break;
+                case Token.Else: Else(); break;
+                case Token.EndIf: break;
                 case Token.For: For(); break;
                 case Token.Next: Next(); break;
                 case Token.Let: Let(); break;
@@ -204,21 +209,63 @@ namespace BasicSharp
         void If() 
         {
             Expr();
-            bool result = (stack.Pop().BinOp(new Value(0), Token.Equal).Real != 1);
+            bool result = (stack.Pop().BinOp(new Value(0), Token.Equal).Real == 1);
 
             Match(Token.Then);
             GetNextToken();
 
             if (result)
             {
-                while (lastToken == Token.NewLine) GetNextToken();
-                Statment();
-            }
-            else
-            {
-                while (lastToken != Token.NewLine) GetNextToken();
+                int i = ifcounter;
+                while (true)
+                {
+                    if (lastToken == Token.If)
+                    {
+                        i++;
+                    }
+                    else if (lastToken == Token.Else)
+                    {
+                        if (i == ifcounter)
+                        {
+                            GetNextToken();
+                            return;
+                        }
+                    }
+                    else if (lastToken == Token.EndIf)
+                    {
+                        if(i == ifcounter)
+                        {
+                            GetNextToken();
+                            return;
+                        }
+                        i--;
+                    }
+                    GetNextToken ();
+                }
             }
         }
+
+		void Else()
+		{
+			int i = ifcounter;
+			while (true)
+            {
+                if (lastToken == Token.If)
+                {
+                    i++;
+                }
+                else if (lastToken == Token.EndIf)
+                {
+                    if(i == ifcounter)
+                    {
+                        GetNextToken();
+                        return;
+                    }
+                    i--;
+                }
+				GetNextToken ();
+			}
+		}
 
         void Label()
         {
