@@ -127,36 +127,9 @@ namespace BasicSharp
 
         void Print()
         {
-            while (true)
-            {
-                if (lastToken == Token.Colon)
-                {
-                    return;
-                }
-                else if (lastToken != Token.NewLine)
-                {
-                    Expr();
-                    Console.Write(stack.Pop().ToString());
-                }
-
-                if (lastToken == Token.Colon) { return; }
-                else if (lastToken == Token.Semicolon) { }
-                else if (lastToken == Token.Comma)
-                {
-                    Console.Write(" ");
-                }
-                else if (lastToken == Token.NewLine || lastToken == Token.EOF)
-                {
-                    if (prevToken != Token.Semicolon && prevToken != Token.Comma)
-                        Console.WriteLine();
-                    break;
-                }
-                else
-                {
-                    Error("Unexpected token");
-                }
-                GetNextToken();
-            }
+            Expr();
+            Console.Write(stack.Pop().ToString());
+            GetNextToken();
         }
 
         void Input()
