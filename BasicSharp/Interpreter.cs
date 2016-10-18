@@ -5,6 +5,9 @@ namespace BasicSharp
 {
     public class Interpreter
     {
+        public bool HasPrint { get; set; }
+        public bool HasInput { get; set; }
+
         private Lexer lex;
         private Token prevToken;
         private Token lastToken;
@@ -127,6 +130,9 @@ namespace BasicSharp
 
         void Print()
         {
+            if (!HasPrint)
+                Error("Print command not allowed");
+
             Expr();
             Console.Write(stack.Pop().ToString());
             GetNextToken();
@@ -134,6 +140,9 @@ namespace BasicSharp
 
         void Input()
         {
+            if (!HasInput)
+                Error("Input command not allowed");
+
             while (true)
             {
                 Match(Token.Identifer);
