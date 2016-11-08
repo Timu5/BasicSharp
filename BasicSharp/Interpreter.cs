@@ -5,8 +5,8 @@ namespace BasicSharp
 {
     public class Interpreter
     {
-        public bool HasPrint { get; set; }
-        public bool HasInput { get; set; }
+        public bool HasPrint { get; set; } = true;
+        public bool HasInput { get; set; } = true;
 
         private Lexer lex;
         private Token prevToken;
