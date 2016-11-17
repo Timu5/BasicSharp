@@ -35,8 +35,6 @@ namespace BasicSharp
         Slash,
         Asterisk,
         Caret,
-        LParen,
-        RParen,
         Equal,
         Less,
         More,
@@ -46,6 +44,9 @@ namespace BasicSharp
         Or,
         And,
         Not,
+
+        LParen,
+        RParen,
 
         EOF = -1   //End Of File
     }

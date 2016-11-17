@@ -16,9 +16,10 @@ namespace BasicSharp
         private Dictionary<string, Marker> labels;
         private Dictionary<string, Marker> loops;
 
-		private int ifcounter;
+        public delegate Value BasicFunction(Interpreter interpreter, List<Value> args);
+        private Dictionary<string, BasicFunction> funcs;
 
-        private Stack<Value> stack;
+        private int ifcounter;
 
         private Marker lineMarker;
 
@@ -30,8 +31,9 @@ namespace BasicSharp
             this.vars = new Dictionary<string, Value>();
             this.labels = new Dictionary<string, Marker>();
             this.loops = new Dictionary<string, Marker>();
-            this.stack = new Stack<Value>();
-			this.ifcounter = 0;
+            this.funcs = new Dictionary<string, BasicFunction>();
+            this.ifcounter = 0;
+            AddFunction("abs", (Interpreter interpreter, List<Value> args) => { return new Value(Math.Abs(args[0].Real)); });
         }
 
         public Value GetVar(string name)
@@ -45,6 +47,12 @@ namespace BasicSharp
         {
             if (!vars.ContainsKey(name)) vars.Add(name, val);
             else vars[name] = val;
+        }
+
+        public void AddFunction(string name, BasicFunction function)
+        {
+            if (!funcs.ContainsKey(name)) funcs.Add(name, function);
+            else funcs[name] = function;
         }
 
         void Error(string text)
@@ -133,8 +141,7 @@ namespace BasicSharp
             if (!HasPrint)
                 Error("Print command not allowed");
 
-            Expr();
-            Console.Write(stack.Pop().ToString());
+            Console.Write(Expr().ToString());
             GetNextToken();
         }
 
@@ -190,8 +197,7 @@ namespace BasicSharp
 
         void If() 
         {
-            Expr();
-            bool result = (stack.Pop().BinOp(new Value(0), Token.Equal).Real == 1);
+            bool result = (Expr().BinOp(new Value(0), Token.Equal).Real == 1);
 
             Match(Token.Then);
             GetNextToken();
@@ -275,9 +281,8 @@ namespace BasicSharp
             string id = lex.Identifer;
 
             GetNextToken();
-            Expr();
-
-            SetVar(id, stack.Pop());
+            
+            SetVar(id, Expr());
         }
 
         void For()
@@ -289,7 +294,7 @@ namespace BasicSharp
             Match(Token.Equal);
 
             GetNextToken();
-            Expr();
+            Value v  = Expr();
 
             if (loops.ContainsKey(var))
             {
@@ -297,18 +302,16 @@ namespace BasicSharp
             }
             else
             {
-                SetVar(var, stack.Pop());
+                SetVar(var, v);
                 loops.Add(var, lineMarker);
             }
 
             Match(Token.To);
 
             GetNextToken();
-            Expr();
-
-            Value val = stack.Pop();
+            v = Expr();
             
-            if (vars[var].BinOp(val, Token.More).Real == 1)
+            if (vars[var].BinOp(v, Token.More).Real == 1)
             {
                 while (true)
                 {
@@ -334,11 +337,10 @@ namespace BasicSharp
             lastToken = Token.NewLine;
         }
 
-        void Expr()
+        Value Expr()
         {
             Dictionary<Token, int> prec = new Dictionary<Token, int>() 
             {
-                { Token.LParen, -1 }, { Token.RParen, -1 },
                 { Token.Or, 0 }, { Token.And, 0 },
                 { Token.Equal, 1 }, { Token.NotEqual, 1 },       
                 { Token.Less, 1 }, { Token.More, 1 }, { Token.LessEqual, 1 },  { Token.MoreEqual, 1 },
@@ -347,6 +349,7 @@ namespace BasicSharp
                 { Token.Caret, 4 }
             };
 
+            Stack<Value> stack = new Stack<Value>();
             Stack<Token> operators = new Stack<Token>();
 
             int i = 0;
@@ -358,24 +361,37 @@ namespace BasicSharp
                 }
                 else if (lastToken == Token.Identifer)
                 {
-                    if (!this.vars.ContainsKey(lex.Identifer))
+                    if (vars.ContainsKey(lex.Identifer))
+                    {
+                        stack.Push(vars[lex.Identifer]);
+                    }
+                    else if (funcs.ContainsKey(lex.Identifer))
+                    {
+                        string name = lex.Identifer;
+                        List<Value> args = new List<Value>();
+                        GetNextToken();
+                        Match(Token.LParen);
+
+                        start:
+                        if (GetNextToken() != Token.RParen)
+                        {
+                            args.Add(Expr());
+                            if (lastToken == Token.Comma)
+                                goto start;
+                        }
+
+                        stack.Push(funcs[name](null, args));
+                    }
+                    else
+                    {
                         Error("Undeclared variable " + lex.Identifer);
-                    stack.Push(vars[lex.Identifer]);
+                    }
                 }
                 else if (lastToken == Token.LParen)
                 {
-                    operators.Push(Token.LParen);
-                }
-                else if (lastToken == Token.RParen)
-                {
-                    while (operators.Count > 0)
-                    {
-                        Token t = operators.Pop();
-                        if (t == Token.LParen)
-                            break;
-                        else
-                            Operation(t);
-                    }
+                    GetNextToken();
+                    stack.Push(Expr());
+                    Match(Token.RParen);
                 }
                 else if (lastToken >= Token.Plus && lastToken <= Token.Not)
                 {
@@ -387,7 +403,7 @@ namespace BasicSharp
                     else
                     {
                         while (operators.Count > 0 && prec[lastToken] <= prec[operators.Peek()])
-                            Operation(operators.Pop());
+                            Operation(ref stack, operators.Pop());
                         operators.Push(lastToken);
                     }
                 }
@@ -397,15 +413,18 @@ namespace BasicSharp
                         Error("Empty expression");
                     break;
                 }
+
                 i++;
                 GetNextToken();
             }
 
             while (operators.Count > 0)
-                Operation(operators.Pop());
+                Operation(ref stack, operators.Pop());
+
+            return stack.Pop();
         }
 
-        void Operation(Token token)
+        void Operation(ref Stack<Value> stack, Token token)
         {
             Value b = stack.Pop();
             Value a = stack.Pop();
