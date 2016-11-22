@@ -33,7 +33,7 @@ namespace BasicSharp
             this.loops = new Dictionary<string, Marker>();
             this.funcs = new Dictionary<string, BasicFunction>();
             this.ifcounter = 0;
-            AddFunction("abs", (Interpreter interpreter, List<Value> args) => { return new Value(Math.Abs(args[0].Real)); });
+            BuiltInFunctions.InstallAll(this);
         }
 
         public Value GetVar(string name)
