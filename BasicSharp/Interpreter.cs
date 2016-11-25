@@ -141,8 +141,7 @@ namespace BasicSharp
             if (!HasPrint)
                 Error("Print command not allowed");
 
-            Console.Write(Expr().ToString());
-            GetNextToken();
+            Console.WriteLine(Expr().ToString());
         }
 
         void Input()
