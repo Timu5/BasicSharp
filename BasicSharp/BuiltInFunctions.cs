@@ -15,6 +15,7 @@ namespace BasicSharp
             interpreter.AddFunction("abs", Abs);
             interpreter.AddFunction("min", Min);
             interpreter.AddFunction("max", Max);
+            interpreter.AddFunction("not", Not);
         }
 
         public static Value Str(Interpreter interpreter, List<Value> args)
@@ -55,6 +56,14 @@ namespace BasicSharp
                 throw new ArgumentException();
 
             return new Value(Math.Max(args[0].Real, args[1].Real));
+        }
+
+        public static Value Not(Interpreter interpreter, List<Value> args)
+        {
+            if (args.Count < 1)
+                throw new ArgumentException();
+
+            return new Value(args[0].Real == 0 ? 1 : 0);
         }
     }
 }

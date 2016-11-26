@@ -71,7 +71,6 @@ namespace BasicSharp
                     case "END": return Token.End;
                     case "OR": return Token.Or;
                     case "AND": return Token.And;
-                    case "NOT": return Token.Not;
                     case "REM":
                         while (lastChar != '\n') GetChar();
                         GetChar();
