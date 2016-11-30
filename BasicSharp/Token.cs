@@ -17,7 +17,6 @@ namespace BasicSharp
         For,
         To,
         Next,
-        Goto,
         Input,
         Let,
         Gosub,
