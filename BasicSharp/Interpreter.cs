@@ -80,7 +80,7 @@ namespace BasicSharp
 
             if (lastToken == Token.EOF && prevToken == Token.EOF)
                 Error("Unexpected end of file");
-            
+
             return lastToken;
         }
 
@@ -129,7 +129,7 @@ namespace BasicSharp
                     Error("Expect keyword got " + keyword.ToString());
                     break;
             }
-            if(lastToken == Token.Colon)
+            if (lastToken == Token.Colon)
             {
                 GetNextToken();
                 Statment();
@@ -152,16 +152,16 @@ namespace BasicSharp
             while (true)
             {
                 Match(Token.Identifer);
-               
+
                 if (!vars.ContainsKey(lex.Identifer)) vars.Add(lex.Identifer, new Value());
-                
+
                 string input = Console.ReadLine();
                 double d;
                 if (double.TryParse(input, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out d))
                     vars[lex.Identifer] = new Value(d);
                 else
                     vars[lex.Identifer] = new Value(input);
-                
+
                 GetNextToken();
                 if (lastToken != Token.Comma) break;
                 GetNextToken();
@@ -194,7 +194,7 @@ namespace BasicSharp
             lastToken = Token.NewLine;
         }
 
-        void If() 
+        void If()
         {
             bool result = (Expr().BinOp(new Value(0), Token.Equal).Real == 1);
 
@@ -220,14 +220,14 @@ namespace BasicSharp
                     }
                     else if (lastToken == Token.EndIf)
                     {
-                        if(i == ifcounter)
+                        if (i == ifcounter)
                         {
                             GetNextToken();
                             return;
                         }
                         i--;
                     }
-                    GetNextToken ();
+                    GetNextToken();
                 }
             }
         }
@@ -243,14 +243,14 @@ namespace BasicSharp
                 }
                 else if (lastToken == Token.EndIf)
                 {
-                    if(i == ifcounter)
+                    if (i == ifcounter)
                     {
                         GetNextToken();
                         return;
                     }
                     i--;
                 }
-                GetNextToken ();
+                GetNextToken();
             }
         }
 
@@ -258,7 +258,7 @@ namespace BasicSharp
         {
             string name = lex.Identifer;
             if (!labels.ContainsKey(name)) labels.Add(name, lex.TokenMarker);
-            
+
             GetNextToken();
             Match(Token.NewLine);
         }
@@ -280,7 +280,7 @@ namespace BasicSharp
             string id = lex.Identifer;
 
             GetNextToken();
-            
+
             SetVar(id, Expr());
         }
 
@@ -293,7 +293,7 @@ namespace BasicSharp
             Match(Token.Equal);
 
             GetNextToken();
-            Value v  = Expr();
+            Value v = Expr();
 
             if (loops.ContainsKey(var))
             {
@@ -309,7 +309,7 @@ namespace BasicSharp
 
             GetNextToken();
             v = Expr();
-            
+
             if (vars[var].BinOp(v, Token.More).Real == 1)
             {
                 while (true)
@@ -336,99 +336,95 @@ namespace BasicSharp
             lastToken = Token.NewLine;
         }
 
-        Value Expr()
+        Value Expr(int min = 0)
         {
-            Dictionary<Token, int> prec = new Dictionary<Token, int>() 
+            Dictionary<Token, int> precedens = new Dictionary<Token, int>()
             {
                 { Token.Or, 0 }, { Token.And, 0 },
-                { Token.Equal, 1 }, { Token.NotEqual, 1 },       
-                { Token.Less, 1 }, { Token.More, 1 }, { Token.LessEqual, 1 },  { Token.MoreEqual, 1 },
+                { Token.Equal, 1 }, { Token.NotEqual, 1 },
+                { Token.Less, 1 }, { Token.More, 1 },
+                { Token.LessEqual, 1 },  { Token.MoreEqual, 1 },
                 { Token.Plus, 2 }, { Token.Minus, 2 },
                 { Token.Asterisk, 3 }, {Token.Slash, 3 },
                 { Token.Caret, 4 }
             };
 
-            Stack<Value> stack = new Stack<Value>();
-            Stack<Token> operators = new Stack<Token>();
+            Value lhs = Primary();
 
-            int i = 0;
             while (true)
             {
-                if (lastToken == Token.Value)
-                {
-                    stack.Push(lex.Value);
-                }
-                else if (lastToken == Token.Identifer)
-                {
-                    if (vars.ContainsKey(lex.Identifer))
-                    {
-                        stack.Push(vars[lex.Identifer]);
-                    }
-                    else if (funcs.ContainsKey(lex.Identifer))
-                    {
-                        string name = lex.Identifer;
-                        List<Value> args = new List<Value>();
-                        GetNextToken();
-                        Match(Token.LParen);
+                if (lastToken < Token.Plus || lastToken > Token.And || precedens[lastToken] < min)
+                    break;
 
-                        start:
-                        if (GetNextToken() != Token.RParen)
-                        {
-                            args.Add(Expr());
-                            if (lastToken == Token.Comma)
-                                goto start;
-                        }
+                Token op = lastToken;
+                int prec = precedens[lastToken];
+                int assoc = 0; // 0 left, 1 right
+                int nextmin = assoc == 0 ? prec : prec + 1;
+                GetNextToken();
+                Value rhs = Expr(nextmin);
+                lhs = lhs.BinOp(rhs, op);
+            }
 
-                        stack.Push(funcs[name](null, args));
-                    }
-                    else
-                    {
-                        Error("Undeclared variable " + lex.Identifer);
-                    }
-                }
-                else if (lastToken == Token.LParen)
+            return lhs;
+        }
+
+        Value Primary()
+        {
+            Value prim = Value.Zero;
+
+            if (lastToken == Token.Value)
+            {
+                prim = lex.Value;
+                GetNextToken();
+            }
+            else if (lastToken == Token.Identifer)
+            {
+                if (vars.ContainsKey(lex.Identifer))
                 {
+                    prim = vars[lex.Identifer];
+                }
+                else if (funcs.ContainsKey(lex.Identifer))
+                {
+                    string name = lex.Identifer;
+                    List<Value> args = new List<Value>();
                     GetNextToken();
-                    stack.Push(Expr());
-                    Match(Token.RParen);
-                }
-                else if (lastToken >= Token.Plus && lastToken <= Token.Not)
-                {
-                    if ((lastToken == Token.Minus || lastToken == Token.Minus) && (i == 0 || prevToken == Token.LParen))
+                    Match(Token.LParen);
+
+                start:
+                    if (GetNextToken() != Token.RParen)
                     {
-                        stack.Push(new Value(0));
-                        operators.Push(lastToken);
+                        args.Add(Expr());
+                        if (lastToken == Token.Comma)
+                            goto start;
                     }
-                    else
-                    {
-                        while (operators.Count > 0 && prec[lastToken] <= prec[operators.Peek()])
-                            Operation(ref stack, operators.Pop());
-                        operators.Push(lastToken);
-                    }
+
+                    prim = funcs[name](null, args);
                 }
                 else
                 {
-                    if (i == 0)
-                        Error("Empty expression");
-                    break;
+                    Error("Undeclared variable " + lex.Identifer);
                 }
-
-                i++;
                 GetNextToken();
             }
+            else if (lastToken == Token.LParen)
+            {
+                GetNextToken();
+                prim = Expr();
+                Match(Token.RParen);
+                GetNextToken();
+            }
+            else if (lastToken == Token.Plus || lastToken == Token.Not)
+            {
+                Token op = lastToken;
+                GetNextToken();
+                prim = Value.Zero.BinOp(Primary(), op); // we dont realy have a unary operators
+            }
+            else
+            {
+                Error("Unexpexted token in primary!");
+            }
 
-            while (operators.Count > 0)
-                Operation(ref stack, operators.Pop());
-
-            return stack.Pop();
-        }
-
-        void Operation(ref Stack<Value> stack, Token token)
-        {
-            Value b = stack.Pop();
-            Value a = stack.Pop();
-            Value result = a.BinOp(b, token);
-            stack.Push(result);
+            return prim;
         }
     }
 }
