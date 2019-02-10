@@ -232,10 +232,10 @@ namespace BasicSharp
             }
         }
 
-		void Else()
-		{
-			int i = ifcounter;
-			while (true)
+        void Else()
+        {
+            int i = ifcounter;
+            while (true)
             {
                 if (lastToken == Token.If)
                 {
@@ -250,9 +250,9 @@ namespace BasicSharp
                     }
                     i--;
                 }
-				GetNextToken ();
-			}
-		}
+                GetNextToken ();
+            }
+        }
 
         void Label()
         {
