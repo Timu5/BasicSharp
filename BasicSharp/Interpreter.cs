@@ -13,6 +13,7 @@ namespace BasicSharp
         private Token lastToken;
 
         private Dictionary<string, Value> vars;
+        private Dictionary<string, Marker> labels;
         private Dictionary<string, Marker> loops;
 
         public delegate Value BasicFunction(Interpreter interpreter, List<Value> args);
@@ -28,6 +29,7 @@ namespace BasicSharp
         {
             this.lex = new Lexer(input);
             this.vars = new Dictionary<string, Value>();
+            this.labels = new Dictionary<string, Marker>();
             this.loops = new Dictionary<string, Marker>();
             this.funcs = new Dictionary<string, BasicFunction>();
             this.ifcounter = 0;
@@ -107,6 +109,7 @@ namespace BasicSharp
             {
                 case Token.Print: Print(); break;
                 case Token.Input: Input(); break;
+                case Token.Goto: Goto(); break;
                 case Token.If: If(); break;
                 case Token.Else: Else(); break;
                 case Token.EndIf: break;
@@ -116,6 +119,7 @@ namespace BasicSharp
                 case Token.End: End(); break;
                 case Token.Identifer:
                     if (lastToken == Token.Equal) Let();
+                    else if (lastToken == Token.Colon) Label();
                     else goto default;
                     break;
                 case Token.EOF:
@@ -162,6 +166,32 @@ namespace BasicSharp
                 if (lastToken != Token.Comma) break;
                 GetNextToken();
             }
+        }
+
+        void Goto()
+        {
+            Match(Token.Identifer);
+            string name = lex.Identifer;
+
+            if (!labels.ContainsKey(name))
+            {
+                while (true)
+                {
+                    if (GetNextToken() == Token.Colon && prevToken == Token.Identifer)
+                    {
+                        if (!labels.ContainsKey(lex.Identifer))
+                            labels.Add(lex.Identifer, lex.TokenMarker);
+                        if (lex.Identifer == name)
+                            break;
+                    }
+                    if (lastToken == Token.EOF)
+                    {
+                        Error("Cannot find label named " + name);
+                    }
+                }
+            }
+            lex.GoTo(labels[name]);
+            lastToken = Token.NewLine;
         }
 
         void If() 
@@ -223,6 +253,15 @@ namespace BasicSharp
 				GetNextToken ();
 			}
 		}
+
+        void Label()
+        {
+            string name = lex.Identifer;
+            if (!labels.ContainsKey(name)) labels.Add(name, lex.TokenMarker);
+            
+            GetNextToken();
+            Match(Token.NewLine);
+        }
 
         void End()
         {

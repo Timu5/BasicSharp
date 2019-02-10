@@ -63,6 +63,7 @@ namespace BasicSharp
                     case "FOR": return Token.For;
                     case "TO": return Token.To;
                     case "NEXT": return Token.Next;
+                    case "GOTO": return Token.Goto;
                     case "INPUT": return Token.Input;
                     case "LET": return Token.Let;
                     case "GOSUB": return Token.Gosub;
