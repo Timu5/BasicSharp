@@ -120,7 +120,7 @@ namespace BasicSharp
                 case Token.Identifer:
                     if (lastToken == Token.Equal) Let();
                     else if (lastToken == Token.Colon) Label();
-                    else goto default;
+                    else Expr();
                     break;
                 case Token.EOF:
                     exit = true;
