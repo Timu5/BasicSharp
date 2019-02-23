@@ -413,7 +413,7 @@ namespace BasicSharp
                 Match(Token.RParen);
                 GetNextToken();
             }
-            else if (lastToken == Token.Plus || lastToken == Token.Not)
+            else if (lastToken == Token.Plus || lastToken == Token.Minus)
             {
                 Token op = lastToken;
                 GetNextToken();
