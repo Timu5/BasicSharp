@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BasicSharp
 {
-    class BuiltInFunctions
+    class BuiltIns
     {
         public static void InstallAll(Interpreter interpreter)
         {
