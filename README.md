@@ -1,10 +1,10 @@
 BasicSharp
 ====
-Simple BASIC interpreter written in C# for .Net platform. Syntax of basic script is modernize version of BASIC, see example below.
+Simple BASIC interpreter written in C#. Language syntax is modernize version of BASIC, see example below.
 
 Example
 -------
-``` basic
+```BlitzBasic
 print "Hello World"
 
 let a = 10
@@ -14,13 +14,13 @@ let b = 20
 print "a+b=" + (a+b)
 
 if a = 10 then
-	print "True"
+    print "True"
 else
-	print "False"
+    print "False"
 endif
 
 for i = 1 to 10
-	print i
+    print i
 next i
 
 goto mylabel
