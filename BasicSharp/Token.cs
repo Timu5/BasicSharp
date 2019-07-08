@@ -3,9 +3,9 @@ namespace BasicSharp
 {
     public enum Token
     {
-        Unkown,
+        Unknown,
 
-        Identifer,
+        Identifier,
         Value,
 
         //Keywords

@@ -119,7 +119,7 @@ namespace BasicSharp
                 case Token.Next: Next(); break;
                 case Token.Let: Let(); break;
                 case Token.End: End(); break;
-                case Token.Identifer:
+                case Token.Identifier:
                     if (lastToken == Token.Equal) Let();
                     else if (lastToken == Token.Colon) Label();
                     else Expr();
@@ -154,17 +154,17 @@ namespace BasicSharp
 
             while (true)
             {
-                Match(Token.Identifer);
+                Match(Token.Identifier);
 
-                if (!vars.ContainsKey(lex.Identifer)) vars.Add(lex.Identifer, new Value());
+                if (!vars.ContainsKey(lex.Identifier)) vars.Add(lex.Identifier, new Value());
 
                 string input = Console.ReadLine();
                 double d;
                 // try to parse as double, if failed read value as string
                 if (double.TryParse(input, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out d))
-                    vars[lex.Identifer] = new Value(d);
+                    vars[lex.Identifier] = new Value(d);
                 else
-                    vars[lex.Identifer] = new Value(input);
+                    vars[lex.Identifier] = new Value(input);
 
                 GetNextToken();
                 if (lastToken != Token.Comma) break;
@@ -174,19 +174,19 @@ namespace BasicSharp
 
         void Goto()
         {
-            Match(Token.Identifer);
-            string name = lex.Identifer;
+            Match(Token.Identifier);
+            string name = lex.Identifier;
 
             if (!labels.ContainsKey(name))
             {
                 // if we didn't encaunter required label yet, start to search for it
                 while (true)
                 {
-                    if (GetNextToken() == Token.Colon && prevToken == Token.Identifer)
+                    if (GetNextToken() == Token.Colon && prevToken == Token.Identifier)
                     {
-                        if (!labels.ContainsKey(lex.Identifer))
-                            labels.Add(lex.Identifer, lex.TokenMarker);
-                        if (lex.Identifer == name)
+                        if (!labels.ContainsKey(lex.Identifier))
+                            labels.Add(lex.Identifier, lex.TokenMarker);
+                        if (lex.Identifier == name)
                             break;
                     }
                     if (lastToken == Token.EOF)
@@ -264,7 +264,7 @@ namespace BasicSharp
 
         void Label()
         {
-            string name = lex.Identifer;
+            string name = lex.Identifier;
             if (!labels.ContainsKey(name)) labels.Add(name, lex.TokenMarker);
 
             GetNextToken();
@@ -280,12 +280,12 @@ namespace BasicSharp
         {
             if (lastToken != Token.Equal)
             {
-                Match(Token.Identifer);
+                Match(Token.Identifier);
                 GetNextToken();
                 Match(Token.Equal);
             }
 
-            string id = lex.Identifer;
+            string id = lex.Identifier;
 
             GetNextToken();
 
@@ -294,8 +294,8 @@ namespace BasicSharp
 
         void For()
         {
-            Match(Token.Identifer);
-            string var = lex.Identifer;
+            Match(Token.Identifier);
+            string var = lex.Identifier;
 
             GetNextToken();
             Match(Token.Equal);
@@ -323,8 +323,8 @@ namespace BasicSharp
             {
                 while (true)
                 {
-                    while (!(GetNextToken() == Token.Identifer && prevToken == Token.Next)) ;
-                    if (lex.Identifer == var)
+                    while (!(GetNextToken() == Token.Identifier && prevToken == Token.Next)) ;
+                    if (lex.Identifier == var)
                     {
                         loops.Remove(var);
                         GetNextToken();
@@ -338,8 +338,8 @@ namespace BasicSharp
         void Next()
         {
             // jump to begining of the "for" loop
-            Match(Token.Identifer);
-            string var = lex.Identifer;
+            Match(Token.Identifier);
+            string var = lex.Identifier;
             vars[var] = vars[var].BinOp(new Value(1), Token.Plus);
             lex.GoTo(new Marker(loops[var].Pointer - 1, loops[var].Line, loops[var].Column - 1));
             lastToken = Token.NewLine;
@@ -388,16 +388,16 @@ namespace BasicSharp
                 prim = lex.Value;
                 GetNextToken();
             }
-            else if (lastToken == Token.Identifer)
+            else if (lastToken == Token.Identifier)
             {
                 // ident | ident '(' args ')'
-                if (vars.ContainsKey(lex.Identifer))
+                if (vars.ContainsKey(lex.Identifier))
                 {
-                    prim = vars[lex.Identifer];
+                    prim = vars[lex.Identifier];
                 }
-                else if (funcs.ContainsKey(lex.Identifer))
+                else if (funcs.ContainsKey(lex.Identifier))
                 {
-                    string name = lex.Identifer;
+                    string name = lex.Identifier;
                     List<Value> args = new List<Value>();
                     GetNextToken();
                     Match(Token.LParen);
@@ -414,7 +414,7 @@ namespace BasicSharp
                 }
                 else
                 {
-                    Error("Undeclared variable " + lex.Identifer);
+                    Error("Undeclared variable " + lex.Identifier);
                 }
                 GetNextToken();
             }

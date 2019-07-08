@@ -4,7 +4,7 @@ namespace BasicSharp
 {
     public enum ValueType
     {
-        Real,
+        Real, // it's double
         String
     }
 
@@ -53,6 +53,7 @@ namespace BasicSharp
             Value a = this;
             if (a.Type != b.Type)
             {
+				// promote one value to higher type
                 if (a.Type > b.Type)
                     b = b.Convert(a.Type);
                 else
@@ -97,7 +98,7 @@ namespace BasicSharp
                     case Token.MoreEqual: return new Value(a.Real >= b.Real ? 1 : 0);
                 }
             }
-            throw new Exception("Unkown binop");
+            throw new Exception("Unknown binop");
         }
 
         public override string ToString()

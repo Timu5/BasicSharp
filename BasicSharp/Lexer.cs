@@ -5,13 +5,13 @@ namespace BasicSharp
     public class Lexer
     {
         private readonly string source;
-        private Marker sourceMarker;
+        private Marker sourceMarker; // current position in source string
         private char lastChar;
 
         public Marker TokenMarker { get; set; }
 
-        public string Identifer { get; set; }
-        public Value Value { get; set; }
+        public string Identifier { get; set; } // Last encountered identifier
+        public Value Value { get; set; } // Last number or string
 
         public Lexer(string input)
         {
@@ -43,6 +43,7 @@ namespace BasicSharp
 
         public Token GetToken()
         {
+            // skip white chars
             while (lastChar == ' ' || lastChar == '\t' || lastChar == '\r')
                 GetChar();
 
@@ -50,10 +51,11 @@ namespace BasicSharp
 
             if (char.IsLetter(lastChar))
             {
-                Identifer = lastChar.ToString();
+                Identifier = lastChar.ToString();
                 while (char.IsLetterOrDigit(GetChar()))
-                    Identifer += lastChar;
-                switch (Identifer.ToUpper())
+                    Identifier += lastChar;
+
+                switch (Identifier.ToUpper())
                 {
                     case "PRINT": return Token.Print;
                     case "IF": return Token.If;
@@ -76,7 +78,7 @@ namespace BasicSharp
                         GetChar();
                         return GetToken();
                     default:
-                        return Token.Identifer;
+                        return Token.Identifier;
                 }
             }
 
@@ -92,7 +94,7 @@ namespace BasicSharp
                 return Token.Value;
             }
 
-            Token tok = Token.Unkown;
+            Token tok = Token.Unknown;
             switch (lastChar)
             {
                 case '\n': tok = Token.NewLine; break;
@@ -108,6 +110,7 @@ namespace BasicSharp
                 case '(': tok = Token.LParen; break;
                 case ')': tok = Token.RParen; break;
                 case '\'':
+                    // skip comment until new line
                     while (lastChar != '\n') GetChar();
                     GetChar();
                     return GetToken();
@@ -128,6 +131,7 @@ namespace BasicSharp
                     {
                         if (lastChar == '\\')
                         {
+                            // parse \n, \t, \\, \"
                             switch (char.ToLower(GetChar()))
                             {
                                 case 'n': str += '\n'; break;
