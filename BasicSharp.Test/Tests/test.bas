@@ -1,5 +1,5 @@
 
-printa "Hello World"
+print "Hello World"
 
 let a = 10
 print "Variable a: " + a

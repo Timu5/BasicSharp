@@ -25,6 +25,25 @@ namespace BasicSharp
             sourceMarker = marker;
         }
 
+        public string GetLine(Marker marker)
+        {
+            Marker oldMarker = sourceMarker;
+            marker.Pointer--;
+            GoTo(marker);
+
+            string line = "";
+            do
+            {
+                line += GetChar();
+            } while (lastChar != '\n' && lastChar != (char)0);
+
+            line.Remove(line.Length - 1);
+
+            GoTo(oldMarker);
+
+            return line;
+        }
+
         char GetChar()
         {
             sourceMarker.Column++;

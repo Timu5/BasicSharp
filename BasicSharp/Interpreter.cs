@@ -49,6 +49,11 @@ namespace BasicSharp
             else vars[name] = val;
         }
 
+        public string GetLine()
+        {
+            return lex.GetLine(lineMarker);
+        }
+
         public void AddFunction(string name, BasicFunction function)
         {
             if (!funcs.ContainsKey(name)) funcs.Add(name, function);
@@ -57,7 +62,7 @@ namespace BasicSharp
 
         void Error(string text)
         {
-            throw new Exception(text + " at line: " + lineMarker.Line);
+            throw new Exception(text + " at line " + lineMarker.Line + ": " + GetLine());
         }
 
         void Match(Token tok)
