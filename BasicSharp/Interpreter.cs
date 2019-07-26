@@ -126,8 +126,8 @@ namespace BasicSharp
                 case Token.End: End(); break;
                 case Token.Identifier:
                     if (lastToken == Token.Equal) Let();
-                    else if (lastToken == Token.Colon) Label();
-                    else Expr();
+                    else if (lastToken == Token.Colon) Label();;
+                    else goto default;
                     break;
                 case Token.EOF:
                     exit = true;
