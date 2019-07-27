@@ -96,6 +96,8 @@ namespace BasicSharp
                     case Token.More: return new Value(a.Real > b.Real ? 1 : 0);
                     case Token.LessEqual: return new Value(a.Real <= b.Real ? 1 : 0);
                     case Token.MoreEqual: return new Value(a.Real >= b.Real ? 1 : 0);
+                    case Token.And: return new Value((a.Real != 0) && (b.Real != 0) ? 1 : 0);
+                    case Token.Or: return new Value((a.Real != 0) || (b.Real != 0) ? 1 : 0);
                 }
             }
             throw new Exception("Unknown binop");

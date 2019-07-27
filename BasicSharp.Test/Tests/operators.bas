@@ -13,4 +13,6 @@ assert 1 < 2
 assert 1 <= 1
 assert 1 And 1
 assert 1 Or 0
+assert "abc" = "abc"
+assert "abc" <> "abc1"
   
