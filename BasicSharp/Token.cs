@@ -24,6 +24,7 @@ namespace BasicSharp
         Return,
         Rem,
         End,
+        Assert,
 
         NewLine,
         Colon,

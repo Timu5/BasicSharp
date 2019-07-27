@@ -124,9 +124,10 @@ namespace BasicSharp
                 case Token.Next: Next(); break;
                 case Token.Let: Let(); break;
                 case Token.End: End(); break;
+                case Token.Assert: Assert(); break;
                 case Token.Identifier:
                     if (lastToken == Token.Equal) Let();
-                    else if (lastToken == Token.Colon) Label();;
+                    else if (lastToken == Token.Colon) Label();
                     else goto default;
                     break;
                 case Token.EOF:
@@ -348,6 +349,16 @@ namespace BasicSharp
             vars[var] = vars[var].BinOp(new Value(1), Token.Plus);
             lex.GoTo(new Marker(loops[var].Pointer - 1, loops[var].Line, loops[var].Column - 1));
             lastToken = Token.NewLine;
+        }
+
+        void Assert()
+        {
+            bool result = (Expr().BinOp(new Value(0), Token.Equal).Real == 1);
+
+            if (result)
+            {
+                Error("Assertion fault"); // if out assert evaluate to false, throw error with souce code line
+            }
         }
 
         Value Expr(int min = 0)
