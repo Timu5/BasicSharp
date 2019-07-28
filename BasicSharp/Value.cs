@@ -48,6 +48,23 @@ namespace BasicSharp
             return this;
         }
 
+        public Value UnaryOp(Token tok)
+        {
+            if (Type != ValueType.Real)
+            {
+                throw new Exception("Can only do unary operations on numbers.");
+            }
+
+            switch (tok)
+            {
+                case Token.Plus: return this;
+                case Token.Minus: return new Value(-Real);
+                case Token.Not: return new Value(Real == 0 ? 1 : 0);
+            }
+
+            throw new Exception("Unknown unary operator.");
+        }
+
         public Value BinOp(Value b, Token tok)
         {
             Value a = this;
@@ -100,7 +117,8 @@ namespace BasicSharp
                     case Token.Or: return new Value((a.Real != 0) || (b.Real != 0) ? 1 : 0);
                 }
             }
-            throw new Exception("Unknown binop");
+
+            throw new Exception("Unknown binary operator.");
         }
 
         public override string ToString()

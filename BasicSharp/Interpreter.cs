@@ -442,13 +442,13 @@ namespace BasicSharp
                 Match(Token.RParen);
                 GetNextToken();
             }
-            else if (lastToken == Token.Plus || lastToken == Token.Minus)
+            else if (lastToken == Token.Plus || lastToken == Token.Minus || lastToken == Token.Not)
             {
                 // unary operator
                 // '-' | '+' primary
                 Token op = lastToken;
                 GetNextToken();
-                prim = Value.Zero.BinOp(Primary(), op); // we dont realy have a unary operators
+                prim = Primary().UnaryOp(op);
             }
             else
             {
