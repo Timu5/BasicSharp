@@ -89,6 +89,7 @@
     <None Include="Tests\test.bas" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Tests\ifs.bas" />
     <Content Include="Tests\operators.bas" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
