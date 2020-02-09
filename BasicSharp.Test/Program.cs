@@ -11,7 +11,6 @@ namespace BasicSharp.Test
             foreach (string file in Directory.GetFiles(Path.Combine(Environment.CurrentDirectory, "Tests"), "*.bas"))
             {
                 Interpreter basic = new Interpreter(File.ReadAllText(file));
-
                 try
                 {
                     basic.Exec();
