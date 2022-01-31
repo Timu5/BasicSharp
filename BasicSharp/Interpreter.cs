@@ -39,7 +39,7 @@ namespace BasicSharp
         public Value GetVar(string name)
         {
             if (!vars.ContainsKey(name))
-                throw new Exception("Variable with name " + name + " does not exist.");
+                throw new BasicException("Variable with name " + name + " does not exist.", lineMarker.Line);
             return vars[name];
         }
 
@@ -62,7 +62,7 @@ namespace BasicSharp
 
         void Error(string text)
         {
-            throw new Exception(text + " at line " + lineMarker.Line + ": " + GetLine());
+            throw new BasicException(text, lineMarker.Line);
         }
 
         void Match(Token tok)
