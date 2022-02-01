@@ -30,3 +30,34 @@ mylabel:
 Print "True"
 
 ```
+
+How to use
+----------
+
+```cs
+using System;
+using BasicSharp;
+
+namespace MyApp
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            string code = "print \"Hello World\"";
+            Interpreter basic = new Interpreter(code);
+            basic.printHandler += Console.WriteLine;
+            basic.inputHandler += Console.ReadLine; 
+            try
+            {
+                basic.Exec();
+            }
+            catch (BasicException e)
+            {
+                Console.WriteLine(e.Message);
+                Console.WriteLine(e.Line);
+            }
+        }
+    }
+}
+```
