@@ -5,8 +5,11 @@ namespace BasicSharp
 {
     public class Interpreter
     {
-        public bool HasPrint { get; set; } = true;
-        public bool HasInput { get; set; } = true;
+        public delegate void PrintFunction(string text);
+        public delegate string InputFunction();
+
+        public PrintFunction printHandler;
+        public InputFunction inputHandler;
 
         private Lexer lex;
         private Token prevToken; // token before last one
@@ -39,7 +42,7 @@ namespace BasicSharp
         public Value GetVar(string name)
         {
             if (!vars.ContainsKey(name))
-                throw new Exception("Variable with name " + name + " does not exist.");
+                throw new BasicException("Variable with name " + name + " does not exist.", lineMarker.Line);
             return vars[name];
         }
 
@@ -62,7 +65,7 @@ namespace BasicSharp
 
         void Error(string text)
         {
-            throw new Exception(text + " at line " + lineMarker.Line + ": " + GetLine());
+            throw new BasicException(text, lineMarker.Line);
         }
 
         void Match(Token tok)
@@ -147,24 +150,18 @@ namespace BasicSharp
 
         void Print()
         {
-            if (!HasPrint)
-                Error("Print command not allowed");
-
-            Console.WriteLine(Expr().ToString());
+            printHandler?.Invoke(Expr().ToString());
         }
 
         void Input()
         {
-            if (!HasInput)
-                Error("Input command not allowed");
-
             while (true)
             {
                 Match(Token.Identifier);
 
                 if (!vars.ContainsKey(lex.Identifier)) vars.Add(lex.Identifier, new Value());
 
-                string input = Console.ReadLine();
+                string input = inputHandler?.Invoke();
                 double d;
                 // try to parse as double, if failed read value as string
                 if (double.TryParse(input, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out d))
@@ -312,7 +309,7 @@ namespace BasicSharp
             // save for loop marker
             if (loops.ContainsKey(var))
             {
-                loops[var] = lineMarker; 
+                loops[var] = lineMarker;
             }
             else
             {
