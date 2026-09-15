@@ -18,6 +18,7 @@ public class Interpreter
     private Dictionary<string, Value> vars; // all variables are stored here
     private Dictionary<string, Marker> labels; // already seen labels 
     private Dictionary<string, Marker> loops; // for loops
+    private Stack<Marker> returnStack = new Stack<Marker>(); // gosub return markers
 
     public delegate Value BasicFunction(Interpreter interpreter, List<Value> args);
     private Dictionary<string, BasicFunction> funcs; // all maped functions
@@ -120,11 +121,13 @@ public class Interpreter
             case Token.Print: Print(); break;
             case Token.Input: Input(); break;
             case Token.Goto: Goto(); break;
+            case Token.Gosub: GoSub(); break;
             case Token.If: If(); break;
             case Token.Else: Else(); break;
             case Token.EndIf: break;
             case Token.For: For(); break;
             case Token.Next: Next(); break;
+            case Token.Return: Return(); break;
             case Token.Let: Let(); break;
             case Token.End: End(); break;
             case Token.Assert: Assert(); break;
@@ -180,25 +183,25 @@ public class Interpreter
         Match(Token.Identifier);
         string name = lex.Identifier;
 
-        if (!labels.ContainsKey(name))
-        {
-            // if we didn't encaunter required label yet, start to search for it
-            while (true)
-            {
-                if (GetNextToken() == Token.Colon && prevToken == Token.Identifier)
-                {
-                    if (!labels.ContainsKey(lex.Identifier))
-                        labels.Add(lex.Identifier, lex.TokenMarker);
-                    if (lex.Identifier == name)
-                        break;
-                }
-                if (lastToken == Token.EOF)
-                {
-                    Error("Cannot find label named " + name);
-                }
-            }
-        }
-        lex.GoTo(labels[name]);
+        Marker labelMarker = FindLabel(name);
+
+        lex.GoTo(labelMarker);
+        lastToken = Token.NewLine;
+    }
+
+    void GoSub()
+    {
+        Match(Token.Identifier);
+        string name = lex.Identifier;
+
+        // Save the point after the identifier to jump back to when a return is encountered
+        Marker returnToMarker = new Marker(lex.TokenMarker.Pointer + lex.Identifier.Length, 
+            lex.TokenMarker.Line, lex.TokenMarker.Column + lex.Identifier.Length);
+        returnStack.Push(returnToMarker);
+        
+        Marker labelMarker = FindLabel(name);
+
+        lex.GoTo(labelMarker);
         lastToken = Token.NewLine;
     }
 
@@ -348,6 +351,17 @@ public class Interpreter
         lastToken = Token.NewLine;
     }
 
+    void Return()
+    {
+        // If there is a gosub to return to then jump back to it
+        if (returnStack.Count != 0)
+        {
+            Marker returnToMarker = returnStack.Pop();
+            lex.GoTo(returnToMarker, true);
+            lastToken = Token.NewLine;
+        }
+    }
+
     void Assert()
     {
         bool result = (Expr().BinOp(new Value(0), Token.Equal).Real == 1);
@@ -453,5 +467,29 @@ public class Interpreter
         }
 
         return prim;
+    }
+
+    Marker FindLabel(string name)
+    {
+        if (labels.TryGetValue(name, out Marker labelMarker))
+            return labelMarker;
+
+        // if we didn't encaunter required label yet, start to search for it
+        while (true)
+        {
+            if (GetNextToken() == Token.Colon && prevToken == Token.Identifier)
+            {
+                if (!labels.ContainsKey(lex.Identifier))
+                    labels.Add(lex.Identifier, lex.TokenMarker);
+                if (lex.Identifier == name)
+                    break;
+            }
+            if (lastToken == Token.EOF)
+            {
+                Error("Cannot find label named " + name);
+            }
+        }
+
+        return labels[name];
     }
 }

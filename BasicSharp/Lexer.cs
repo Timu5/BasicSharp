@@ -20,9 +20,12 @@ public class Lexer
         lastChar = source[0];
     }
 
-    public void GoTo(Marker marker)
+    public void GoTo(Marker marker, bool resetChar = false)
     {
         sourceMarker = marker;
+        // Reset last char so GetToken correctly processes the next char
+        if (resetChar)
+            lastChar = '\r';
     }
 
     public string GetLine(Marker marker)
